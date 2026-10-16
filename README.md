@@ -15,7 +15,10 @@ visor-sbs/
 │   ├── viewer.js              # Mapeo UV SBS y calibración de planos
 │   ├── controls.js            # Panel lil-gui
 │   ├── fileLoader.js          # Lectura de archivos locales
-│   └── ui.js                  # Pantalla completa, Cardboard y avisos
+│   ├── ui.js                  # Pantalla completa, Cardboard y avisos
+│   ├── touchControls.js       # Arrastre y pellizco (Pointer Events)
+│   ├── autoCalibration.js     # Estimación de disparidad L/R
+│   └── profiles.js            # Guardado local de calibraciones
 ├── assets/
 │   ├── images/
 │   │   ├── demo-sbs-1.jpg     # Muestra: montaña y bote
@@ -44,11 +47,13 @@ Abre `http://localhost:5500/`. **No abras `index.html` con doble clic y `file://
 1. La app carga **DEMO 01** automáticamente. Comprueba el efecto estereoscópico o abre **DEMO 02**.
 2. Haz clic en **Cargar SBS** y selecciona una fotografía SBS (`.jpg`, `.png`, `.webp`, `.avif`, hasta 30 MB). También puedes arrastrarla al visor en computadora.
 3. La fotografía debe incluir **la vista izquierda en la mitad izquierda y la derecha en la mitad derecha**. Si están invertidas, utiliza la opción **Intercambiar L/R**.
-4. Ajusta parámetros con **lil-gui**. Es preferible comenzar con *Paralaje 0 px, Escala 100%, Alineación 0 px*.
+4. Ajusta parámetros con **lil-gui** o directamente sobre el visor: **un dedo** (o ratón) desplaza las dos vistas, **dos dedos deslizándose** cambian el paralaje horizontal y el desnivel vertical, y **pellizcar** cambia la escala. Es preferible comenzar con *Paralaje 0 px, Escala 100%, Alineación 0 px*.
 5. Pulsa **Entrar en modo Cardboard**. En móviles compatibles, el navegador solicitará pantalla completa y orientación horizontal; algunas versiones de iOS Safari no permiten estas funciones para elementos HTML arbitrarios. En ese caso el proyecto usa un modo inmersivo CSS y hay que girar manualmente el teléfono.
 6. Coloca el teléfono horizontal en las gafas. **Para salir**, pulsa `Esc` en computadora; en el teléfono, toca dos veces rápidamente la pantalla o usa el botón/gesto del sistema para salir de pantalla completa. Puedes sacar primero el teléfono de las gafas para acceder a la pantalla.
 7. Si la imagen resulta incómoda, retira el visor y reduce la escala o el paralaje. No fuerces la fusión de fotografías con disparidad excesiva.
-8. **Guardar ajustes (JSON)** descarga un archivo con los valores elegidos y metadatos de la fotografía (sin incluir sus píxeles). Restablecer calibración regresa a los valores iniciales.
+8. **Probar ajuste automático** estima la diferencia de alineación horizontal y vertical entre varias zonas de las dos vistas. Puedes revisar la confianza orientativa, afinar los valores y **Deshacer ajuste automático**.
+9. Para reutilizar una calibración, escribe un nombre en **Mis perfiles de calibración** y pulsa **Guardar perfil**. Selecciona un perfil y pulsa **Aplicar perfil** para usarlo sobre la imagen actual. Activa **Aplicar el perfil seleccionado al cargar otra imagen** para que se active automáticamente en próximas fotografías. Al seleccionar otra imagen sin esta opción, se mantienen los ajustes que tengas en pantalla.
+10. **Exportar ajustes JSON** descarga un archivo con parámetros y metadatos de la fotografía (sin píxeles); **Importar ajustes JSON** permite restaurarlo desde un archivo en otro dispositivo. Restablecer calibración devuelve los controles a sus valores iniciales.
 
 ### Calibración lil-gui
 
@@ -64,13 +69,26 @@ Abre `http://localhost:5500/`. **No abras `index.html` con doble clic y `file://
 
 La calibración digital del paralaje **no cambia la distancia interpupilar física** ni repara una fotografía con disparidades o geometría estéreo erróneas. Las lentes Cardboard pueden requerir calibración óptica/distorsión específica no implementada en este visor introductorio.
 
+## 3.1. Controles táctiles y perfiles
+
+- **Arrastrar con un dedo:** mueve ambas perspectivas (Mover X y Mover Y). También puedes arrastrar con el ratón desde la computadora.
+- **Deslizar con dos dedos en paralelo:** ajusta la diferencia relativa entre ambas vistas. Horizontal = **Paralaje**, vertical = **Desnivel L/R**. Los valores se actualizan también en lil-gui.
+- **Separar o juntar dos dedos:** amplía o reduce la escala sin deformar la proporción. Los gestos siguen disponibles en modo Cardboard; el doble toque para salir solo cuenta toques breves, no movimientos ni gestos de dos dedos.
+- **Ajuste automático (orientativo):** analiza una versión reducida de cada vista, busca coincidencias locales de bordes y estima una traslación global. Intenta modificar solo **Paralaje** y **Desnivel L/R**, respetando los demás valores. Funciona sin servidor ni red adicional; depende del contenido de la foto y puede informar que no encontró suficientes coincidencias.
+- **Limitaciones del automático:** no endereza fotografías giradas, no rectifica perspectiva, no corrige cámaras con focal/escala/óptica distinta, no detecta con certeza Full-SBS frente a Half-SBS ni garantiza confort visual. Siempre verifica el resultado en las gafas. Para fotos de dos teléfonos puede ser necesaria una rectificación previa.
+- **Perfiles de calibración:** se guardan en el `localStorage` del navegador actual, asociado al origen del sitio (hasta 20 perfiles). Puedes reemplazar un perfil guardando con el mismo nombre; eliminarlo no afecta las imágenes originales. Si borras los datos del navegador o usas otro teléfono, los perfiles no se trasladan solos.
+- **Migrar entre dispositivos:** exporta el JSON, transfiérelo e impórtalo. Si deseas conservarlo como perfil reutilizable en ese dispositivo, guárdalo con un nombre después de importarlo. Los perfiles no incluyen archivos de imagen.
+- **Reutilizar parámetros:** proporciona un punto de partida, pero diferentes cámaras, imágenes o resoluciones pueden requerir pequeños reajustes; el `localStorage` puede no estar disponible en todos los modos privados.
+
 ## 4. Arquitectura técnica
 
 - `Texture` carga el archivo de imagen en GPU.
 - Dos geometrías `PlaneGeometry` recortan las regiones izquierda (`U=0…0.5`) y derecha (`U=0.5…1`) mediante coordenadas UV, sin cortar ni alterar el archivo original.
 - Cada plano se dibuja en una escena independiente, con una cámara `OrthographicCamera` compartida y un único `WebGLRenderer`, mediante `setViewport()` y `setScissor()`.
 - `viewer.js` calcula la escala de ajuste que conserva el aspecto natural de la imagen en la mitad de la pantalla, y aplica los desplazamientos en píxeles CSS.
-- `lil-gui` modifica un objeto compartido de configuración y actualiza las transformaciones inmediatamente.
+- `lil-gui` y `touchControls.js` modifican el mismo objeto compartido de configuración y actualizan las transformaciones inmediatamente.
+- `autoCalibration.js` compara gradientes de 9 regiones de una muestra de 256 × 144 px por ojo: estima la mediana de los desplazamientos más coherentes y la convierte a píxeles CSS del visor. No modifica el archivo SBS.
+- `profiles.js` valida los valores de calibración y los conserva con nombres en `localStorage` (o importa parámetros desde JSON).
 - Las fotos locales se procesan **únicamente en el navegador**. No se suben a servidores.
 
 ## 5. Publicar con GitHub Pages
@@ -124,3 +142,7 @@ Reemplaza `USUARIO` por tu cuenta, y crea primero el repositorio vacío en GitHu
 - GitHub Pages — https://docs.github.com/en/pages
 
 **Licencia educativa:** El código de esta muestra se entrega para ser adaptado y utilizado en clase. Las imágenes de demostración fueron generadas para este proyecto.
+
+## 9. Versión con mejoras
+
+Actualización: octubre de 2026. Se conservaron las rutas relativas, el visor Three.js, el panel lil-gui, las demostraciones SBS y la compatibilidad con GitHub Pages. Nuevas funciones: arrastre táctil, pellizco, ajuste automático local, deshacer ajuste automático, perfiles persistentes e importación JSON.

@@ -50,6 +50,23 @@ export function createStereoViewer(stage, settings) {
   meshLeft.visible = false;
   meshRight.visible = false;
 
+  function getDisplayMetrics() {
+    if (!imageWidth || !imageHeight) return null;
+    const { width, height } = engine.getSize();
+    if (!width || !height) return null;
+    const eyeAspect = params.format === 'half'
+      ? imageWidth / imageHeight : (imageWidth / 2) / imageHeight;
+    const viewportAspect = (width / 2) / height;
+    const fit = Math.min(1, viewportAspect / eyeAspect);
+    const displayHeight = height * fit * (params.scale / 100);
+    return {
+      displayHeight,
+      displayWidth: displayHeight * eyeAspect,
+      sourceEyeWidth: imageWidth / 2,
+      sourceEyeHeight: imageHeight,
+    };
+  }
+
   function update() {
     if (!texture) return;
     const { width, height } = engine.getSize();
@@ -114,6 +131,7 @@ export function createStereoViewer(stage, settings) {
     setImage,
     update,
     getImageInfo,
+    getDisplayMetrics,
     resize: engine.resize,
     dispose() {
       geometryLeft?.dispose();

@@ -56,6 +56,7 @@
                 <div class="eye-label eye-label-left" aria-hidden="true">L · Izquierdo</div>
                 <div class="eye-label eye-label-right" aria-hidden="true">R · Derecho</div>
                 <div class="center-divider" aria-hidden="true"></div>
+                <div class="gesture-hint" aria-hidden="true">☝ Mover · ✌ Alinear / zoom</div>
                 <div id="emptyState" class="empty-state" hidden>
                   <div class="empty-icon">◉ ◉</div>
                   <strong>Tu visor está listo</strong>
@@ -80,7 +81,7 @@
 
           <section class="instruction-strip" id="ayuda" aria-label="Consejos de uso">
             <div class="instruction-num">01</div><div><strong>Carga una foto SBS</strong><span>Dos perspectivas, izquierda y derecha, en un mismo archivo.</span></div>
-            <div class="instruction-num">02</div><div><strong>Ajusta con lil-gui</strong><span>Corrige paralaje, escala, encuadre y alineación.</span></div>
+            <div class="instruction-num">02</div><div><strong>Ajusta con gestos o lil-gui</strong><span>Corrige paralaje, escala, encuadre y alineación.</span></div>
             <div class="instruction-num">03</div><div><strong>Activa Cardboard</strong><span>Gira el teléfono en horizontal y colócalo en tus gafas.</span></div>
           </section>
         </div>
@@ -94,11 +95,37 @@
               </div>
               <span class="status-chip">EN VIVO</span>
             </div>
-            <p class="aside-description">Mueve los controles. Los cambios se aplican instantáneamente a las dos perspectivas.</p>
+            <p class="aside-description">Usa el panel o toca la imagen directamente. Los cambios se aplican en vivo.</p>
+            <div class="gesture-help"><strong>Gestos táctiles:</strong> 1 dedo mueve ambas vistas. 2 dedos deslizando corrigen paralaje (horizontal) y desnivel (vertical). Pellizcar acerca o aleja. Funciona también en Cardboard.</div>
             <div id="guiHost" class="gui-host"></div>
+            <div class="auto-box">
+              <button id="autoBtn" type="button" class="btn btn-accent w-100">✦ Probar ajuste automático</button>
+              <button id="undoAutoBtn" type="button" class="btn btn-outline-soft btn-sm" disabled>↶ Deshacer ajuste automático</button>
+              <div id="autoStatus" class="auto-status" role="status" aria-live="polite">Detecta diferencias entre las vistas L/R e intenta corregirlas. Es una aproximación.</div>
+            </div>
+            <section class="profile-box" aria-labelledby="profilesTitle">
+              <h3 id="profilesTitle">Mis perfiles de calibración</h3>
+              <p>Guarda tus ajustes favoritos para volver a aplicarlos a otras fotografías SBS.</p>
+              <div class="profile-save-row">
+                <input id="profileName" class="form-control form-control-sm" type="text" maxlength="48" placeholder="Ej. Mis gafas Cardboard" aria-label="Nombre del perfil" />
+                <button id="saveProfileBtn" type="button" class="btn btn-accent btn-sm">Guardar perfil</button>
+              </div>
+              <label class="form-label" for="profileSelect">Perfiles guardados</label>
+              <select id="profileSelect" class="form-select form-select-sm"><option value="">Sin perfiles guardados</option></select>
+              <div class="profile-actions">
+                <button id="applyProfileBtn" type="button" class="btn btn-outline-soft btn-sm">Aplicar perfil</button>
+                <button id="deleteProfileBtn" type="button" class="btn btn-outline-soft btn-sm">Eliminar perfil</button>
+              </div>
+              <label class="profile-toggle" for="autoProfileToggle">
+                <input type="checkbox" id="autoProfileToggle" />
+                <span>Aplicar el perfil seleccionado al cargar otra imagen</span>
+              </label>
+            </section>
             <div class="aside-buttons">
               <button id="resetBtn" type="button" class="btn btn-outline-soft w-100">↺ Restablecer calibración</button>
-              <button id="saveBtn" type="button" class="btn btn-outline-soft w-100">↓ Guardar ajustes (JSON)</button>
+              <button id="saveBtn" type="button" class="btn btn-outline-soft w-100">↓ Exportar ajustes JSON</button>
+              <label class="btn btn-outline-soft w-100 import-label" for="importInput">↑ Importar ajustes JSON</label>
+              <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json" aria-label="Importar configuración JSON" />
             </div>
             <div class="tip-box"><strong>Consejo de calibración</strong><p>Comienza con un paralaje de 0 px y un tamaño del 100%. Haz ajustes pequeños mientras pruebas las gafas. No fuerces la vista si produce molestias.</p></div>
           </aside>

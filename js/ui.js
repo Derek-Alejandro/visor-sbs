@@ -16,6 +16,7 @@ export function createImmersiveMode(onLayoutChange) {
   let inCardboard = false;
   let nativeFullscreenStarted = false;
   let lastTap = 0;
+  const contacts = new Map();
 
   function layout() {
     requestAnimationFrame(() => onLayoutChange());
@@ -51,6 +52,8 @@ export function createImmersiveMode(onLayoutChange) {
     if (!inCardboard) return;
     inCardboard = false;
     nativeFullscreenStarted = false;
+    contacts.clear();
+    lastTap = 0;
     document.body.classList.remove('cardboard-mode');
     try { if (screen.orientation?.unlock) screen.orientation.unlock(); } catch { /* opcional */ }
     if (document.fullscreenElement && document.exitFullscreen) {
@@ -80,11 +83,26 @@ export function createImmersiveMode(onLayoutChange) {
     layout();
   }
 
-  function tapped(event) {
+  function pointerDown(event) {
     if (!inCardboard || event.pointerType === 'mouse') return;
+    contacts.set(event.pointerId, { x: event.clientX, y: event.clientY, time: Date.now(), multitouch: false });
+    if (contacts.size > 1) {
+      lastTap = 0;
+      for (const touch of contacts.values()) touch.multitouch = true;
+    }
+  }
+
+  function pointerUp(event) {
+    const touch = contacts.get(event.pointerId);
+    if (!touch) return;
+    const onlyPointer = contacts.size === 1 && !touch.multitouch;
+    contacts.delete(event.pointerId);
+    if (!inCardboard || !onlyPointer || event.type === 'pointercancel') return;
+    const travelled = Math.hypot(event.clientX - touch.x, event.clientY - touch.y);
     const time = Date.now();
-    if (time - lastTap < 800) { lastTap = 0; exitCardboard(); }
-    else { lastTap = time; }
+    if (travelled > 12 || time - touch.time > 280) { lastTap = 0; return; }
+    if (time - lastTap < 380) { lastTap = 0; exitCardboard(); }
+    else lastTap = time;
   }
 
   function keydown(event) {
@@ -95,7 +113,9 @@ export function createImmersiveMode(onLayoutChange) {
   fullscreenBtn.addEventListener('click', toggleFullscreen);
   document.addEventListener('fullscreenchange', fullscreenChanged);
   document.addEventListener('keydown', keydown);
-  stage.addEventListener('pointerdown', tapped);
+  stage.addEventListener('pointerdown', pointerDown);
+  stage.addEventListener('pointerup', pointerUp);
+  stage.addEventListener('pointercancel', pointerUp);
 
   return { enterCardboard, exitCardboard };
 }
