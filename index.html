@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="es">
 <head>
@@ -5,9 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0a1020" />
   <meta name="description" content="Visor estereoscópico SBS con Three.js, lil-gui y controles de calibración para Google Cardboard." />
+
   <title>StereoLab | Visor SBS</title>
+
+  <!-- Icono de la aplicación web -->
+  <link rel="icon" type="image/png" href="./visor.png" />
+  <link rel="apple-touch-icon" href="./visor.png" />
+
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Estilos propios -->
   <link rel="stylesheet" href="./css/styles.css" />
+
+  <!-- Bibliotecas Three.js y lil-gui -->
   <script type="importmap">
   {
     "imports": {
@@ -16,128 +28,412 @@
     }
   }
   </script>
+
   <script type="module" src="./js/main.js"></script>
 </head>
+
 <body>
   <div class="app-shell" id="appShell">
+
+    <!-- Encabezado -->
     <header class="topbar container-fluid px-3 px-lg-4">
       <div class="d-flex align-items-center gap-3">
-        <div class="brand-mark" aria-hidden="true"><img src="./assets/icons/cardboard.svg" alt="" /></div>
+        <div class="brand-mark" aria-hidden="true">
+          <img src="./assets/icons/cardboard.svg" alt="" />
+        </div>
         <div>
           <div class="brand-name">Stereo<span>Lab</span></div>
-          <div class="brand-caption">Visor estereoscópico SBS · Three.js + lil-gui</div>
+          <div class="brand-caption">
+            Visor estereoscópico SBS · Three.js + lil-gui
+          </div>
         </div>
       </div>
+
       <div class="topbar-actions d-flex align-items-center gap-2">
-        <span class="pill-ready d-none d-sm-inline-flex"><span class="pulse-dot"></span> Visor local</span>
-        <a class="btn btn-outline-light btn-sm help-link" href="#ayuda">Guía rápida</a>
+        <span class="pill-ready d-none d-sm-inline-flex">
+          <span class="pulse-dot"></span> Visor local
+        </span>
+        <a class="btn btn-outline-light btn-sm help-link" href="#ayuda">
+          Guía rápida
+        </a>
       </div>
     </header>
 
+    <!-- Contenido principal -->
     <main class="container-fluid px-3 px-lg-4 py-3 py-lg-4">
       <div class="row gx-3 gy-3 gx-xl-4">
+
+        <!-- Visualizador SBS -->
         <div class="col-12 col-xl-8">
           <section class="panel panel-viewer" aria-label="Visualizador SBS">
+
             <div class="panel-toolbar">
               <div class="toolbar-heading">
                 <div class="eyebrow">VISUALIZADOR</div>
                 <h1>Calibra tu imagen 3D</h1>
                 <p>Selecciona una imagen SBS y ajusta la vista para tus gafas.</p>
               </div>
+
               <div class="toolbar-actions">
-                <label class="btn btn-accent btn-sm action-btn" for="fileInput"><span aria-hidden="true">↑</span> Cargar SBS</label>
-                <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif" class="visually-hidden" aria-label="Seleccionar fotografía SBS" />
-                <button id="lockImageBtn" type="button" class="btn btn-outline-soft btn-sm action-btn btn-image-lock" aria-pressed="false" title="Bloquear la calibración y los gestos antes de entrar en VR"><span id="lockImageIcon" aria-hidden="true">🔓</span> <span id="lockImageLabel">Bloquear imagen</span></button>
-                <button id="fullscreenBtn" type="button" class="btn btn-outline-soft btn-sm action-btn">⛶ Pantalla completa</button>
+                <label class="btn btn-accent btn-sm action-btn" for="fileInput">
+                  <span aria-hidden="true">↑</span> Cargar SBS
+                </label>
+
+                <input
+                  id="fileInput"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  class="visually-hidden"
+                  aria-label="Seleccionar fotografía SBS"
+                />
+
+                <!-- Bloquear o desbloquear calibración -->
+                <button
+                  id="lockImageBtn"
+                  type="button"
+                  class="btn btn-outline-soft btn-sm action-btn btn-image-lock"
+                  aria-pressed="false"
+                  title="Bloquear la calibración y los gestos antes de entrar en VR"
+                >
+                  <span id="lockImageIcon" aria-hidden="true">🔓</span>
+                  <span id="lockImageLabel">Bloquear imagen</span>
+                </button>
+
+                <button
+                  id="fullscreenBtn"
+                  type="button"
+                  class="btn btn-outline-soft btn-sm action-btn"
+                >
+                  ⛶ Pantalla completa
+                </button>
               </div>
             </div>
 
+            <!-- Pantalla del visor -->
             <div class="display-wrap" id="displayWrap">
-              <div id="viewerStage" class="viewer-stage" role="img" aria-label="Vista izquierda y derecha de la fotografía SBS">
-                <div class="eye-label eye-label-left" aria-hidden="true">L · Izquierdo</div>
-                <div class="eye-label eye-label-right" aria-hidden="true">R · Derecho</div>
+              <div
+                id="viewerStage"
+                class="viewer-stage"
+                role="img"
+                aria-label="Vista izquierda y derecha de la fotografía SBS"
+              >
+                <div class="eye-label eye-label-left" aria-hidden="true">
+                  L · Izquierdo
+                </div>
+
+                <div class="eye-label eye-label-right" aria-hidden="true">
+                  R · Derecho
+                </div>
+
                 <div class="center-divider" aria-hidden="true"></div>
-                <div class="gesture-hint" aria-hidden="true">☝ Mover · ✌ Alinear / zoom</div>
+
+                <div class="gesture-hint" aria-hidden="true">
+                  ☝ Mover · ✌ Alinear / zoom
+                </div>
+
                 <div id="emptyState" class="empty-state" hidden>
                   <div class="empty-icon">◉ ◉</div>
                   <strong>Tu visor está listo</strong>
-                  <span>Carga una imagen SBS o selecciona una fotografía de demostración.</span>
+                  <span>
+                    Carga una imagen SBS o selecciona una fotografía de demostración.
+                  </span>
                 </div>
               </div>
+
+              <!-- Estado de imagen -->
               <div class="stage-footer">
-                <span class="stage-indicator"><span class="pulse-dot"></span> <span id="imageStatus">Cargando demostración…</span></span>
-                <span id="lockStatus" class="lock-status" role="status" aria-live="polite">Calibración editable</span>
+                <span class="stage-indicator">
+                  <span class="pulse-dot"></span>
+                  <span id="imageStatus">Cargando demostración…</span>
+                </span>
+
+                <span
+                  id="lockStatus"
+                  class="lock-status"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Calibración editable
+                </span>
+
                 <span class="dimension-tag" id="imageDimensions">—</span>
               </div>
             </div>
 
+            <!-- Acciones del visor -->
             <div class="bottom-actions">
               <div class="demo-group">
                 <span class="mini-label">PRUEBAS</span>
-                <button type="button" class="btn btn-demo btn-sm" id="demoOneBtn">01 · Montañas</button>
-                <button type="button" class="btn btn-demo btn-sm" id="demoTwoBtn">02 · Profundidad</button>
+
+                <button
+                  type="button"
+                  class="btn btn-demo btn-sm"
+                  id="demoOneBtn"
+                >
+                  01 · Montañas
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-demo btn-sm"
+                  id="demoTwoBtn"
+                >
+                  02 · Profundidad
+                </button>
               </div>
-              <button type="button" class="btn btn-cardboard" id="cardboardBtn"><img src="./assets/icons/cardboard.svg" alt="" /> Entrar en modo Cardboard <span aria-hidden="true">↗</span></button>
+
+              <button
+                type="button"
+                class="btn btn-cardboard"
+                id="cardboardBtn"
+              >
+                <img src="./assets/icons/cardboard.svg" alt="" />
+                Entrar en modo Cardboard
+                <span aria-hidden="true">↗</span>
+              </button>
             </div>
           </section>
 
-          <section class="instruction-strip" id="ayuda" aria-label="Consejos de uso">
-            <div class="instruction-num">01</div><div><strong>Carga una foto SBS</strong><span>Dos perspectivas, izquierda y derecha, en un mismo archivo.</span></div>
-            <div class="instruction-num">02</div><div><strong>Ajusta con gestos o lil-gui</strong><span>Corrige paralaje, escala, encuadre y alineación.</span></div>
-            <div class="instruction-num">03</div><div><strong>Bloquea y activa Cardboard</strong><span>Fija tus ajustes con el botón de candado y luego entra en VR.</span></div>
+          <!-- Guía rápida -->
+          <section
+            class="instruction-strip"
+            id="ayuda"
+            aria-label="Consejos de uso"
+          >
+            <div class="instruction-num">01</div>
+            <div>
+              <strong>Carga una foto SBS</strong>
+              <span>
+                Dos perspectivas, izquierda y derecha, en un mismo archivo.
+              </span>
+            </div>
+
+            <div class="instruction-num">02</div>
+            <div>
+              <strong>Ajusta con gestos o lil-gui</strong>
+              <span>
+                Corrige paralaje, escala, encuadre y alineación.
+              </span>
+            </div>
+
+            <div class="instruction-num">03</div>
+            <div>
+              <strong>Bloquea y activa Cardboard</strong>
+              <span>
+                Fija tus ajustes con el botón de candado y luego entra en VR.
+              </span>
+            </div>
           </section>
         </div>
 
+        <!-- Panel de calibración -->
         <div class="col-12 col-xl-4">
-          <aside class="panel panel-calibration" aria-label="Panel de calibración">
+          <aside
+            class="panel panel-calibration"
+            aria-label="Panel de calibración"
+          >
             <div class="aside-heading">
               <div>
                 <div class="eyebrow">PANEL DE CONTROL</div>
                 <h2>Calibración visual</h2>
               </div>
+
               <span class="status-chip">EN VIVO</span>
             </div>
-            <p class="aside-description">Usa el panel o toca la imagen directamente. Al terminar, pulsa <strong>Bloquear imagen</strong> en el panel principal antes de entrar en VR: tus ajustes quedarán fijos.</p>
-            <div class="gesture-help"><strong>Gestos táctiles:</strong> con la imagen desbloqueada, 1 dedo mueve ambas vistas; 2 dedos corrigen paralaje/desnivel o cambian la escala. <strong>Bloquéala para impedir movimientos accidentales, también en pantalla completa y Cardboard.</strong></div>
-            <div id="guiHost" class="gui-host"></div>
-            <div class="auto-box">
-              <button id="autoBtn" type="button" class="btn btn-accent w-100">✦ Probar ajuste automático</button>
-              <button id="undoAutoBtn" type="button" class="btn btn-outline-soft btn-sm" disabled>↶ Deshacer ajuste automático</button>
-              <div id="autoStatus" class="auto-status" role="status" aria-live="polite">Detecta diferencias entre las vistas L/R e intenta corregirlas. Es una aproximación.</div>
+
+            <p class="aside-description">
+              Usa el panel o toca la imagen directamente.
+              Al terminar, pulsa <strong>Bloquear imagen</strong>
+              en el panel principal antes de entrar en VR:
+              tus ajustes quedarán fijos.
+            </p>
+
+            <div class="gesture-help">
+              <strong>Gestos táctiles:</strong>
+              con la imagen desbloqueada, 1 dedo mueve ambas vistas;
+              2 dedos corrigen paralaje/desnivel o cambian la escala.
+              <strong>
+                Bloquéala para impedir movimientos accidentales,
+                también en pantalla completa y Cardboard.
+              </strong>
             </div>
-            <section class="profile-box" aria-labelledby="profilesTitle">
+
+            <!-- lil-gui -->
+            <div id="guiHost" class="gui-host"></div>
+
+            <!-- Calibración automática -->
+            <div class="auto-box">
+              <button
+                id="autoBtn"
+                type="button"
+                class="btn btn-accent w-100"
+              >
+                ✦ Probar ajuste automático
+              </button>
+
+              <button
+                id="undoAutoBtn"
+                type="button"
+                class="btn btn-outline-soft btn-sm"
+                disabled
+              >
+                ↶ Deshacer ajuste automático
+              </button>
+
+              <div
+                id="autoStatus"
+                class="auto-status"
+                role="status"
+                aria-live="polite"
+              >
+                Detecta diferencias entre las vistas L/R e intenta corregirlas.
+                Es una aproximación.
+              </div>
+            </div>
+
+            <!-- Perfiles de calibración -->
+            <section
+              class="profile-box"
+              aria-labelledby="profilesTitle"
+            >
               <h3 id="profilesTitle">Mis perfiles de calibración</h3>
-              <p>Guarda tus ajustes favoritos para volver a aplicarlos a otras fotografías SBS.</p>
+
+              <p>
+                Guarda tus ajustes favoritos para volver a aplicarlos
+                a otras fotografías SBS.
+              </p>
+
               <div class="profile-save-row">
-                <input id="profileName" class="form-control form-control-sm" type="text" maxlength="48" placeholder="Ej. Mis gafas Cardboard" aria-label="Nombre del perfil" />
-                <button id="saveProfileBtn" type="button" class="btn btn-accent btn-sm">Guardar perfil</button>
+                <input
+                  id="profileName"
+                  class="form-control form-control-sm"
+                  type="text"
+                  maxlength="48"
+                  placeholder="Ej. Mis gafas Cardboard"
+                  aria-label="Nombre del perfil"
+                />
+
+                <button
+                  id="saveProfileBtn"
+                  type="button"
+                  class="btn btn-accent btn-sm"
+                >
+                  Guardar perfil
+                </button>
               </div>
-              <label class="form-label" for="profileSelect">Perfiles guardados</label>
-              <select id="profileSelect" class="form-select form-select-sm"><option value="">Sin perfiles guardados</option></select>
+
+              <label class="form-label" for="profileSelect">
+                Perfiles guardados
+              </label>
+
+              <select
+                id="profileSelect"
+                class="form-select form-select-sm"
+              >
+                <option value="">Sin perfiles guardados</option>
+              </select>
+
               <div class="profile-actions">
-                <button id="applyProfileBtn" type="button" class="btn btn-outline-soft btn-sm">Aplicar perfil</button>
-                <button id="deleteProfileBtn" type="button" class="btn btn-outline-soft btn-sm">Eliminar perfil</button>
+                <button
+                  id="applyProfileBtn"
+                  type="button"
+                  class="btn btn-outline-soft btn-sm"
+                >
+                  Aplicar perfil
+                </button>
+
+                <button
+                  id="deleteProfileBtn"
+                  type="button"
+                  class="btn btn-outline-soft btn-sm"
+                >
+                  Eliminar perfil
+                </button>
               </div>
+
               <label class="profile-toggle" for="autoProfileToggle">
                 <input type="checkbox" id="autoProfileToggle" />
-                <span>Aplicar el perfil seleccionado al cargar otra imagen</span>
+                <span>
+                  Aplicar el perfil seleccionado al cargar otra imagen
+                </span>
               </label>
             </section>
+
+            <!-- Herramientas -->
             <div class="aside-buttons">
-              <button id="resetBtn" type="button" class="btn btn-outline-soft w-100">↺ Restablecer calibración</button>
-              <button id="saveBtn" type="button" class="btn btn-outline-soft w-100">↓ Exportar ajustes JSON</button>
-              <label class="btn btn-outline-soft w-100 import-label" for="importInput">↑ Importar ajustes JSON</label>
-              <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json" aria-label="Importar configuración JSON" />
+              <button
+                id="resetBtn"
+                type="button"
+                class="btn btn-outline-soft w-100"
+              >
+                ↺ Restablecer calibración
+              </button>
+
+              <button
+                id="saveBtn"
+                type="button"
+                class="btn btn-outline-soft w-100"
+              >
+                ↓ Exportar ajustes JSON
+              </button>
+
+              <label
+                class="btn btn-outline-soft w-100 import-label"
+                for="importInput"
+              >
+                ↑ Importar ajustes JSON
+              </label>
+
+              <input
+                id="importInput"
+                class="visually-hidden"
+                type="file"
+                accept="application/json,.json"
+                aria-label="Importar configuración JSON"
+              />
             </div>
-            <div class="tip-box"><strong>Consejo de calibración</strong><p>Comienza con un paralaje de 0 px y un tamaño del 100%. Haz ajustes pequeños mientras pruebas las gafas. No fuerces la vista si produce molestias.</p></div>
+
+            <!-- Consejos -->
+            <div class="tip-box">
+              <strong>Consejo de calibración</strong>
+
+              <p>
+                Comienza con un paralaje de 0 px y un tamaño del 100%.
+                Haz ajustes pequeños mientras pruebas las gafas.
+                No fuerces la vista si produce molestias.
+              </p>
+            </div>
           </aside>
-          <div class="small-note mt-3">Compatible con imágenes <strong>SBS completo</strong> y <strong>Half-SBS</strong>. La carga ocurre en tu dispositivo: no enviamos imágenes a ningún servidor. Requiere conexión a Internet para las bibliotecas CDN.</div>
+
+          <div class="small-note mt-3">
+            Compatible con imágenes <strong>SBS completo</strong>
+            y <strong>Half-SBS</strong>.
+            La carga ocurre en tu dispositivo: no enviamos imágenes
+            a ningún servidor. Requiere conexión a Internet para
+            las bibliotecas CDN.
+          </div>
         </div>
       </div>
-      <footer class="site-footer"><span>Proyecto académico · Desarrollo de soluciones en ambientes virtuales</span><span>Three.js · lil-gui · Bootstrap 5 · GitHub Pages</span></footer>
+
+      <!-- Pie de página -->
+      <footer class="site-footer">
+        <span>
+          Proyecto académico · Desarrollo de soluciones en ambientes virtuales
+        </span>
+        <span>
+          Three.js · lil-gui · Bootstrap 5 · GitHub Pages
+        </span>
+      </footer>
     </main>
   </div>
 
-  <div id="toast" class="app-toast" role="status" aria-live="polite"></div>
+  <!-- Notificaciones -->
+  <div
+    id="toast"
+    class="app-toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
 </body>
 </html>
