@@ -48,12 +48,13 @@ Abre `http://localhost:5500/`. **No abras `index.html` con doble clic y `file://
 2. Haz clic en **Cargar SBS** y selecciona una fotografía SBS (`.jpg`, `.png`, `.webp`, `.avif`, hasta 30 MB). También puedes arrastrarla al visor en computadora.
 3. La fotografía debe incluir **la vista izquierda en la mitad izquierda y la derecha en la mitad derecha**. Si están invertidas, utiliza la opción **Intercambiar L/R**.
 4. Ajusta parámetros con **lil-gui** o directamente sobre el visor: **un dedo** (o ratón) desplaza las dos vistas, **dos dedos deslizándose** cambian el paralaje horizontal y el desnivel vertical, y **pellizcar** cambia la escala. Es preferible comenzar con *Paralaje 0 px, Escala 100%, Alineación 0 px*.
-5. Pulsa **Entrar en modo Cardboard**. En móviles compatibles, el navegador solicitará pantalla completa y orientación horizontal; algunas versiones de iOS Safari no permiten estas funciones para elementos HTML arbitrarios. En ese caso el proyecto usa un modo inmersivo CSS y hay que girar manualmente el teléfono.
-6. Coloca el teléfono horizontal en las gafas. **Para salir**, pulsa `Esc` en computadora; en el teléfono, toca dos veces rápidamente la pantalla o usa el botón/gesto del sistema para salir de pantalla completa. Puedes sacar primero el teléfono de las gafas para acceder a la pantalla.
-7. Si la imagen resulta incómoda, retira el visor y reduce la escala o el paralaje. No fuerces la fusión de fotografías con disparidad excesiva.
-8. **Probar ajuste automático** estima la diferencia de alineación horizontal y vertical entre varias zonas de las dos vistas. Puedes revisar la confianza orientativa, afinar los valores y **Deshacer ajuste automático**.
-9. Para reutilizar una calibración, escribe un nombre en **Mis perfiles de calibración** y pulsa **Guardar perfil**. Selecciona un perfil y pulsa **Aplicar perfil** para usarlo sobre la imagen actual. Activa **Aplicar el perfil seleccionado al cargar otra imagen** para que se active automáticamente en próximas fotografías. Al seleccionar otra imagen sin esta opción, se mantienen los ajustes que tengas en pantalla.
-10. **Exportar ajustes JSON** descarga un archivo con parámetros y metadatos de la fotografía (sin píxeles); **Importar ajustes JSON** permite restaurarlo desde un archivo en otro dispositivo. Restablecer calibración devuelve los controles a sus valores iniciales.
+5. Cuando termines de ajustar, pulsa **🔓 Bloquear imagen** desde el panel principal: cambiará a **🔒 Desbloquear imagen** y todos los gestos y controles de calibración quedarán temporalmente deshabilitados, incluso en pantalla completa y Cardboard. Puedes seguir viendo fotografías y guardar/exportar perfiles sin desbloquear. Pulsa **Desbloquear imagen** para editar otra vez. Si abres otra fotografía mientras está bloqueada, conservará la calibración actual (sin aplicar automáticamente el perfil seleccionado hasta que la desbloquees). El bloqueo se reinicia al recargar la página y no se incluye en los perfiles/JSON.
+6. Pulsa **Entrar en modo Cardboard**. En móviles compatibles, el navegador solicitará pantalla completa y orientación horizontal; algunas versiones de iOS Safari no permiten estas funciones para elementos HTML arbitrarios. En ese caso el proyecto usa un modo inmersivo CSS y hay que girar manualmente el teléfono.
+7. Coloca el teléfono horizontal en las gafas. **Para salir**, pulsa `Esc` en computadora; en el teléfono, toca dos veces rápidamente la pantalla o usa el botón/gesto del sistema para salir de pantalla completa. Puedes sacar primero el teléfono de las gafas para acceder a la pantalla.
+8. Si la imagen resulta incómoda, retira el visor y reduce la escala o el paralaje. No fuerces la fusión de fotografías con disparidad excesiva.
+9. **Probar ajuste automático** estima la diferencia de alineación horizontal y vertical entre varias zonas de las dos vistas. Puedes revisar la confianza orientativa, afinar los valores y **Deshacer ajuste automático**.
+10. Para reutilizar una calibración, escribe un nombre en **Mis perfiles de calibración** y pulsa **Guardar perfil**. Selecciona un perfil y pulsa **Aplicar perfil** para usarlo sobre la imagen actual. Activa **Aplicar el perfil seleccionado al cargar otra imagen** para que se active automáticamente en próximas fotografías. Al seleccionar otra imagen sin esta opción, se mantienen los ajustes que tengas en pantalla.
+11. **Exportar ajustes JSON** descarga un archivo con parámetros y metadatos de la fotografía (sin píxeles); **Importar ajustes JSON** permite restaurarlo desde un archivo en otro dispositivo. Restablecer calibración devuelve los controles a sus valores iniciales.
 
 ### Calibración lil-gui
 
@@ -71,6 +72,7 @@ La calibración digital del paralaje **no cambia la distancia interpupilar físi
 
 ## 3.1. Controles táctiles y perfiles
 
+- **Bloqueo para VR:** usa el botón **Bloquear imagen** del panel principal antes de activar pantalla completa o Cardboard. Desactiva los gestos, los controles lil-gui y las acciones que modificarían la calibración; no agrega ningún botón sobre la imagen inmersiva. Puedes seguir cargando fotos y guardar/exportar ajustes. Para editar otra vez, vuelve al panel y pulsa **Desbloquear imagen**.
 - **Arrastrar con un dedo:** mueve ambas perspectivas (Mover X y Mover Y). También puedes arrastrar con el ratón desde la computadora.
 - **Deslizar con dos dedos en paralelo:** ajusta la diferencia relativa entre ambas vistas. Horizontal = **Paralaje**, vertical = **Desnivel L/R**. Los valores se actualizan también en lil-gui.
 - **Separar o juntar dos dedos:** amplía o reduce la escala sin deformar la proporción. Los gestos siguen disponibles en modo Cardboard; el doble toque para salir solo cuenta toques breves, no movimientos ni gestos de dos dedos.
@@ -145,4 +147,4 @@ Reemplaza `USUARIO` por tu cuenta, y crea primero el repositorio vacío en GitHu
 
 ## 9. Versión con mejoras
 
-Actualización: octubre de 2026. Se conservaron las rutas relativas, el visor Three.js, el panel lil-gui, las demostraciones SBS y la compatibilidad con GitHub Pages. Nuevas funciones: arrastre táctil, pellizco, ajuste automático local, deshacer ajuste automático, perfiles persistentes e importación JSON.
+Actualización: octubre de 2026. Incluye botón para bloquear/desbloquear la edición de la fotografía antes de entrar en modo VR, sin alterar el renderizado estereoscópico. Se conservaron las rutas relativas, el visor Three.js, el panel lil-gui, las demostraciones SBS y la compatibilidad con GitHub Pages. Nuevas funciones: arrastre táctil, pellizco, ajuste automático local, deshacer ajuste automático, perfiles persistentes e importación JSON.

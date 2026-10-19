@@ -137,3 +137,20 @@ body.cardboard-mode .gesture-hint {display:none!important;}
  .profile-save-row {flex-direction:column;}
  .aside-buttons {grid-template-columns:1fr 1fr;}
 }
+
+/* Bloqueo de calibración: el botón se queda fuera de la vista inmersiva. */
+.btn-image-lock {white-space:nowrap;}
+.btn-image-lock.is-locked {border-color:#48bfae;background:#184b4a;color:#bffaf1;}
+.btn-image-lock.is-locked:hover {background:#225d5b;color:#fff;}
+.viewer-stage.is-locked {cursor:default;}
+.viewer-stage.is-locked .gesture-hint {display:none;}
+.lock-status {font-size:.7rem;color:#a5c3d6;white-space:nowrap;}
+.lock-status.is-locked {color:#a4f1dd;font-weight:700;}
+.stage-footer {flex-wrap:wrap;}
+.dimension-tag {margin-left:auto;}
+.import-label.is-disabled {opacity:.45;cursor:not-allowed;pointer-events:none;}
+@media (max-width:767.98px) {
+  .toolbar-actions .btn-image-lock {order:2;flex-basis:47%;}
+  .toolbar-actions #fullscreenBtn {order:3;flex-basis:47%;}
+  .toolbar-actions label[for="fileInput"] {order:1;flex-basis:100%;}
+}

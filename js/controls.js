@@ -32,6 +32,9 @@ export function createCalibrationGUI(host, config, onChange) {
   return {
     gui,
     refresh() { controllers.forEach(controller => controller.updateDisplay()); },
+    setDisabled(disabled) {
+      controllers.forEach(controller => disabled ? controller.disable() : controller.enable());
+    },
     dispose() { gui.destroy(); },
   };
 }

@@ -16,6 +16,13 @@ const demoButtons = [document.getElementById('demoOneBtn'), document.getElementB
 const autoBtn = document.getElementById('autoBtn');
 const undoAutoBtn = document.getElementById('undoAutoBtn');
 const autoStatus = document.getElementById('autoStatus');
+const lockImageBtn = document.getElementById('lockImageBtn');
+const lockImageLabel = document.getElementById('lockImageLabel');
+const lockImageIcon = document.getElementById('lockImageIcon');
+const lockStatus = document.getElementById('lockStatus');
+const resetBtn = document.getElementById('resetBtn');
+const importInput = document.getElementById('importInput');
+const importLabel = document.querySelector('label[for="importInput"]');
 const profileSelect = document.getElementById('profileSelect');
 const profileName = document.getElementById('profileName');
 const autoProfileToggle = document.getElementById('autoProfileToggle');
@@ -25,6 +32,7 @@ const profiles = createProfileStore();
 let requestCounter = 0;
 let currentImage = null;
 let previousAutoConfig = null;
+let imageLocked = false;
 let viewer;
 
 try {
@@ -39,18 +47,56 @@ try {
 
 const calibration = createCalibrationGUI(document.getElementById('guiHost'), config, () => viewer.update());
 createImmersiveMode(() => viewer.resize());
-createTouchControls(stage, config, () => {
+const touchControls = createTouchControls(stage, config, () => {
   calibration.refresh();
   viewer.update();
 });
 
+// El bloqueo solo afecta la edición: siempre es posible ver y cambiar imágenes,
+// guardar/exportar perfiles y salir de pantalla completa.
+function setImageLocked(locked) {
+  imageLocked = Boolean(locked);
+  touchControls.setLocked(imageLocked);
+  calibration.setDisabled(imageLocked);
+  stage.classList.toggle('is-locked', imageLocked);
+  lockImageBtn.classList.toggle('is-locked', imageLocked);
+  lockImageBtn.setAttribute('aria-pressed', String(imageLocked));
+  lockImageLabel.textContent = imageLocked ? 'Desbloquear imagen' : 'Bloquear imagen';
+  lockImageIcon.textContent = imageLocked ? '🔒' : '🔓';
+  lockStatus.textContent = imageLocked ? '🔒 Imagen bloqueada' : 'Calibración editable';
+  lockStatus.classList.toggle('is-locked', imageLocked);
+  lockImageBtn.title = imageLocked
+    ? 'Permitir de nuevo gestos y modificaciones de calibración'
+    : 'Fijar la calibración antes de entrar en VR';
+
+  // Evitar otros cambios involuntarios mientras está bloqueada.
+  resetBtn.disabled = imageLocked;
+  autoBtn.disabled = imageLocked;
+  undoAutoBtn.disabled = imageLocked || !previousAutoConfig;
+  applyProfileBtn.disabled = imageLocked || !profiles.getSelected();
+  autoProfileToggle.disabled = imageLocked;
+  importInput.disabled = imageLocked;
+  importLabel.classList.toggle('is-disabled', imageLocked);
+  importLabel.setAttribute('aria-disabled', String(imageLocked));
+}
+
+lockImageBtn.addEventListener('click', () => {
+  setImageLocked(!imageLocked);
+  showToast(imageLocked
+    ? 'Imagen bloqueada. Los gestos y ajustes no se modificarán en pantalla completa ni en VR.'
+    : 'Imagen desbloqueada. Puedes volver a calibrarla con gestos o con lil-gui.');
+});
+
 function applySettings(settings) {
+  if (imageLocked) return false;
   Object.assign(config, sanitizeCalibration(settings));
   calibration.refresh();
   viewer.update();
+  return true;
 }
 
 function resetCalibration() {
+  if (imageLocked) return;
   applySettings(DEFAULT_CONFIG);
   previousAutoConfig = null;
   undoAutoBtn.disabled = true;
@@ -69,7 +115,7 @@ function drawProfiles() {
     for (const profile of entries) profileSelect.add(new Option(profile.name, profile.id));
   }
   profileSelect.value = selected?.id || '';
-  applyProfileBtn.disabled = !selected;
+  applyProfileBtn.disabled = imageLocked || !selected;
   deleteProfileBtn.disabled = !selected;
   autoProfileToggle.checked = profiles.getApplyOnLoad();
 }
@@ -84,21 +130,25 @@ async function displaySource(source, selectedDemo = -1) {
     if (requestId !== requestCounter) return;
     currentImage = image;
     const { width, height } = viewer.setImage(image, name);
-    if (profiles.getApplyOnLoad()) {
+    if (profiles.getApplyOnLoad() && !imageLocked) {
       const selected = profiles.getSelected();
       if (selected) applySettings(selected.settings);
     }
     previousAutoConfig = null;
     undoAutoBtn.disabled = true;
-    autoStatus.textContent = 'Imagen lista. Puedes probar un ajuste automático o moverla con tus dedos.';
+    autoStatus.textContent = imageLocked
+      ? 'Imagen lista. La calibración está bloqueada; desbloquéala en el panel principal para modificarla.'
+      : 'Imagen lista. Puedes probar un ajuste automático o moverla con tus dedos.';
     emptyState.hidden = true;
     info.textContent = name;
     dimensions.textContent = `${width} × ${height} px`;
     demoButtons.forEach((button, index) => button.classList.toggle('active', selectedDemo === index));
     if (width % 2 !== 0) showToast('Imagen cargada. Se recomienda un ancho par para SBS.');
-    else showToast(profiles.getApplyOnLoad() && profiles.getSelected()
-      ? `Imagen cargada con perfil «${profiles.getSelected().name}».`
-      : `Imagen cargada: ${name}`);
+    else showToast(imageLocked
+      ? `Imagen cargada: ${name}. La calibración continúa bloqueada.`
+      : profiles.getApplyOnLoad() && profiles.getSelected()
+        ? `Imagen cargada con perfil «${profiles.getSelected().name}».`
+        : `Imagen cargada: ${name}`);
   } catch (error) {
     if (requestId !== requestCounter) return;
     info.textContent = viewer.getImageInfo()?.name || 'Sin imagen';
@@ -115,10 +165,11 @@ fileInput.addEventListener('change', () => {
 
 demoButtons[0].addEventListener('click', () => displaySource('./assets/images/demo-sbs-1.jpg', 0));
 demoButtons[1].addEventListener('click', () => displaySource('./assets/images/demo-sbs-2.jpg', 1));
-document.getElementById('resetBtn').addEventListener('click', resetCalibration);
+resetBtn.addEventListener('click', resetCalibration);
 
 // Estima la disparidad en una muestra pequeña para evitar analizar fotos de 30 MB a tamaño real.
 autoBtn.addEventListener('click', async () => {
+  if (imageLocked) return showToast('Desbloquea la imagen para ajustar el paralaje.');
   if (!currentImage) return showToast('Primero carga una fotografía SBS.');
   const image = currentImage;
   const requestId = requestCounter;
@@ -128,7 +179,7 @@ autoBtn.addEventListener('click', async () => {
   await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
   try {
     const result = estimateSbsAlignment(image);
-    if (requestId !== requestCounter || image !== currentImage) return;
+    if (requestId !== requestCounter || image !== currentImage || imageLocked) return;
     const metrics = viewer.getDisplayMetrics();
     if (!metrics) throw new Error('No fue posible medir el visor.');
     // Desplazamiento de la imagen R respecto a L: compensar signo en X;
@@ -147,16 +198,16 @@ autoBtn.addEventListener('click', async () => {
     autoStatus.textContent = `Ajuste orientativo aplicado: paralaje ${config.parallax.toFixed(1)} px, desnivel ${config.vertical.toFixed(1)} px. Confianza ${result.confidence} (${result.matches} zonas coincidentes). Puedes afinarlo con gestos o lil-gui.`;
     showToast('Ajuste automático estimado. Comprueba el resultado con tus gafas.');
   } catch (error) {
-    if (requestId !== requestCounter || image !== currentImage) return;
+    if (requestId !== requestCounter || image !== currentImage || imageLocked) return;
     autoStatus.textContent = error.message || 'No se pudo completar el análisis.';
     showToast('No hubo una estimación fiable. Puedes calibrar manualmente.');
   } finally {
-    autoBtn.disabled = false;
+    autoBtn.disabled = imageLocked;
   }
 });
 
 undoAutoBtn.addEventListener('click', () => {
-  if (!previousAutoConfig) return;
+  if (imageLocked || !previousAutoConfig) return;
   applySettings(previousAutoConfig);
   previousAutoConfig = null;
   undoAutoBtn.disabled = true;
@@ -179,6 +230,7 @@ profileSelect.addEventListener('change', () => {
   } catch (error) { showToast(error.message); drawProfiles(); }
 });
 applyProfileBtn.addEventListener('click', () => {
+  if (imageLocked) return showToast('Desbloquea la imagen para aplicar otro perfil.');
   const chosen = profiles.getSelected();
   if (!chosen) return showToast('Selecciona un perfil para aplicarlo.');
   applySettings(chosen.settings);
@@ -228,7 +280,7 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   showToast('Ajustes exportados como JSON.');
 });
 
-document.getElementById('importInput').addEventListener('change', async (event) => {
+importInput.addEventListener('change', async (event) => {
   const input = event.currentTarget;
   const file = input.files?.[0];
   input.value = '';
@@ -241,6 +293,7 @@ document.getElementById('importInput').addEventListener('change', async (event) 
       !['parallax', 'scale', 'panX', 'panY', 'vertical', 'format', 'swap'].some(k => Object.hasOwn(candidate, k))) {
       throw new Error('El archivo no contiene parámetros de calibración reconocidos.');
     }
+    if (imageLocked) return showToast('Desbloquea la imagen antes de importar una calibración.');
     applySettings(candidate);
     previousAutoConfig = null;
     undoAutoBtn.disabled = true;
@@ -249,6 +302,7 @@ document.getElementById('importInput').addEventListener('change', async (event) 
 });
 
 // Arrastrar y soltar archivos desde la computadora se mantiene como en la versión original.
+// No cambia la posición de la fotografía ni desactiva su bloqueo.
 function dragOver(event) { event.preventDefault(); stage.classList.add('drag-over'); }
 function dragLeave() { stage.classList.remove('drag-over'); }
 stage.addEventListener('dragover', dragOver);
@@ -259,6 +313,9 @@ stage.addEventListener('drop', (event) => {
   const file = event.dataTransfer?.files?.[0];
   if (file) displaySource(file);
 });
+
+// Empieza desbloqueada en cada visita; el estado de candado no se guarda en perfiles.
+setImageLocked(false);
 
 // La fotografía DEMO 01 sigue apareciendo desde la primera visita.
 displaySource('./assets/images/demo-sbs-1.jpg', 0);

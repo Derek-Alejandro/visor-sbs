@@ -47,6 +47,7 @@
               <div class="toolbar-actions">
                 <label class="btn btn-accent btn-sm action-btn" for="fileInput"><span aria-hidden="true">↑</span> Cargar SBS</label>
                 <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif" class="visually-hidden" aria-label="Seleccionar fotografía SBS" />
+                <button id="lockImageBtn" type="button" class="btn btn-outline-soft btn-sm action-btn btn-image-lock" aria-pressed="false" title="Bloquear la calibración y los gestos antes de entrar en VR"><span id="lockImageIcon" aria-hidden="true">🔓</span> <span id="lockImageLabel">Bloquear imagen</span></button>
                 <button id="fullscreenBtn" type="button" class="btn btn-outline-soft btn-sm action-btn">⛶ Pantalla completa</button>
               </div>
             </div>
@@ -65,6 +66,7 @@
               </div>
               <div class="stage-footer">
                 <span class="stage-indicator"><span class="pulse-dot"></span> <span id="imageStatus">Cargando demostración…</span></span>
+                <span id="lockStatus" class="lock-status" role="status" aria-live="polite">Calibración editable</span>
                 <span class="dimension-tag" id="imageDimensions">—</span>
               </div>
             </div>
@@ -82,7 +84,7 @@
           <section class="instruction-strip" id="ayuda" aria-label="Consejos de uso">
             <div class="instruction-num">01</div><div><strong>Carga una foto SBS</strong><span>Dos perspectivas, izquierda y derecha, en un mismo archivo.</span></div>
             <div class="instruction-num">02</div><div><strong>Ajusta con gestos o lil-gui</strong><span>Corrige paralaje, escala, encuadre y alineación.</span></div>
-            <div class="instruction-num">03</div><div><strong>Activa Cardboard</strong><span>Gira el teléfono en horizontal y colócalo en tus gafas.</span></div>
+            <div class="instruction-num">03</div><div><strong>Bloquea y activa Cardboard</strong><span>Fija tus ajustes con el botón de candado y luego entra en VR.</span></div>
           </section>
         </div>
 
@@ -95,8 +97,8 @@
               </div>
               <span class="status-chip">EN VIVO</span>
             </div>
-            <p class="aside-description">Usa el panel o toca la imagen directamente. Los cambios se aplican en vivo.</p>
-            <div class="gesture-help"><strong>Gestos táctiles:</strong> 1 dedo mueve ambas vistas. 2 dedos deslizando corrigen paralaje (horizontal) y desnivel (vertical). Pellizcar acerca o aleja. Funciona también en Cardboard.</div>
+            <p class="aside-description">Usa el panel o toca la imagen directamente. Al terminar, pulsa <strong>Bloquear imagen</strong> en el panel principal antes de entrar en VR: tus ajustes quedarán fijos.</p>
+            <div class="gesture-help"><strong>Gestos táctiles:</strong> con la imagen desbloqueada, 1 dedo mueve ambas vistas; 2 dedos corrigen paralaje/desnivel o cambian la escala. <strong>Bloquéala para impedir movimientos accidentales, también en pantalla completa y Cardboard.</strong></div>
             <div id="guiHost" class="gui-host"></div>
             <div class="auto-box">
               <button id="autoBtn" type="button" class="btn btn-accent w-100">✦ Probar ajuste automático</button>

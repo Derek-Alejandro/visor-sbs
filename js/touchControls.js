@@ -8,6 +8,18 @@ export function createTouchControls(stage, config, onChange) {
   const contacts = new Map();
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   let pairGesture = null;
+  let locked = false;
+
+  function clearTouches() {
+    const ids = [...contacts.keys()];
+    contacts.clear();
+    pairGesture = null;
+    stage.classList.remove('is-manipulating');
+    for (const id of ids) {
+      try { if (stage.hasPointerCapture?.(id)) stage.releasePointerCapture(id); }
+      catch { /* El puntero puede haberse soltado. */ }
+    }
+  }
 
   function points() { return [...contacts.values()]; }
 
@@ -26,6 +38,7 @@ export function createTouchControls(stage, config, onChange) {
   }
 
   function down(event) {
+    if (locked) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
     if (contacts.size >= 2) return;
     contacts.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -36,6 +49,7 @@ export function createTouchControls(stage, config, onChange) {
   }
 
   function move(event) {
+    if (locked) return;
     if (!contacts.has(event.pointerId)) return;
     const prior = contacts.get(event.pointerId);
     contacts.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -88,14 +102,18 @@ export function createTouchControls(stage, config, onChange) {
   stage.addEventListener('lostpointercapture', up);
 
   return {
+    // Ignora todos los gestos al bloquear; también cancela un arrastre en curso.
+    setLocked(next) {
+      locked = Boolean(next);
+      if (locked) clearTouches();
+    },
     dispose() {
       stage.removeEventListener('pointerdown', down);
       stage.removeEventListener('pointermove', move);
       stage.removeEventListener('pointerup', up);
       stage.removeEventListener('pointercancel', up);
       stage.removeEventListener('lostpointercapture', up);
-      contacts.clear();
-      pairGesture = null;
+      clearTouches();
     },
   };
 }
